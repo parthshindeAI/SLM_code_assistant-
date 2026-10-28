@@ -1,0 +1,48 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.cache/
+
+# --- secret files (never commit these) ---
+credentials*.json
+token*.json
+*.secret
+.env*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+.streamlit/secrets.toml
+
+# --- local model weights ---
+*.gguf
+*.ggml
+*.bin
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.tflite
+models/*
+!models/README.md
+
+# --- generated files (pictures and decks) ---
+outputs/
+logs/
+*.log
+
+# --- tools ---
+.vscode/
+.idea/
+.DS_Store
