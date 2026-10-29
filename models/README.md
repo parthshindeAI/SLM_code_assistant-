@@ -9,7 +9,7 @@ them in their own cache folders:
 | Purpose | Model | Where it lives |
 |---|---|---|
 | Code / PDF / PPT answers | `qwen2.5-coder:7b` | Ollama cache (`%USERPROFILE%\.ollama\models` on Windows) |
-| Text to image | `stabilityai/sdxl-turbo` | HuggingFace cache (`%USERPROFILE%\.cache\huggingface`) |
+| Text to image | `stabilityai/sd-turbo` | HuggingFace cache (`%USERPROFILE%\.cache\huggingface`) |
 
 If you ever want to try a **local GGUF** model instead of Ollama, drop the
 file in this folder, for example `models/qwen2.5-coder-7b-instruct.gguf`, and

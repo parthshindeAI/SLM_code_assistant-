@@ -6,7 +6,11 @@ PROJECT_DIR = Path(__file__).resolve().parent.parent
 CREDENTIALS_FILE = PROJECT_DIR / "credentials.json"
 TOKEN_FILE = PROJECT_DIR / "token.json"
 
-SCOPES = ["openid", "email", "profile"]
+SCOPES = [
+    "openid",
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "https://www.googleapis.com/auth/userinfo.email",
+]
 USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo"
 
 

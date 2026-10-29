@@ -4,9 +4,8 @@
 
 * [ ] `ollama serve` is running in a terminal (most installs auto-start it).
 * [ ] `ollama list` shows `qwen2.5-coder:7b` (or `3b`).
-* [ ] `ollama pull stabilityai/sdxl-turbo`? No - diffusers pulls it on the
-      first image. **Generate one throwaway image at home** so the weights
-      are cached and the demo is instant.
+* [ ] Diffusers downloads SD-Turbo on first use. **Generate one throwaway
+      image at home** so the model is cached before the demo.
 * [ ] `streamlit run app.py` starts with no red error in the terminal.
 * [ ] `credentials.json` is in place **or** you have decided to demo in
       demo mode (both are fine - see the kill-switch test in the README).
@@ -58,6 +57,6 @@
 |---|---|---|
 | "Could not reach Ollama" | "Ollama stopped - restarting it live." | `ollama serve` in a terminal, click a button again |
 | The model is slow | "On a 4 GB card I use the 3B model - let me switch live." | type `qwen2.5-coder:1.5b` in the sidebar model box |
-| The image takes long | "The weights were not cached on this machine." | switch to `stabilityai/sd-turbo`, steps = 1 |
+| The image takes long | "The model weights were not cached on this machine." | Generate a throwaway image before the demo; keep size at 512 |
 | PDF answer is wrong | "This version uses keyword search, not a RAG pipeline - that is the next step I would do." | show `docs/MODEL_NOTES.md` |
 | Everything is on fire | "Let me show the code instead - it is only five files." | open `src/code_model.py` in VS Code |

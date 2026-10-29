@@ -54,8 +54,8 @@ nvidia-smi
 
 Look at the **memory** line in the top-right box:
 
-* **8 GB** (desktop RTX 3050) → use `qwen2.5-coder:7b` and `stabilityai/sdxl-turbo`
-* **4 GB** (laptop RTX 3050) → use `qwen2.5-coder:3b` and `stabilityai/sd-turbo`
+* **8 GB** (desktop RTX 3050) → use `qwen2.5-coder:7b`
+* **4 GB** (laptop RTX 3050) → use `qwen2.5-coder:3b`
 
 The app detects this for you, but knowing the number helps you pick the model.
 
@@ -155,9 +155,13 @@ count, then every question is answered **only from that document's text**.
 
 ### 🎨 Image mode
 
-Describe a picture. The first run downloads the image weights (a few GB, needs
-internet once), after that it draws on your GPU in a few seconds. Without an
-NVIDIA GPU it still works - just slower, and the caption says so.
+Describe a picture. The app uses SD-Turbo, a fast model that supports 1-4
+generation steps (4 by default). Hugging Face downloads and caches the model
+on first use; subsequent runs reuse that cache. The app reuses an existing
+default Hugging Face cache when available. Keep image size at 512 for best
+compatibility. Without an NVIDIA GPU it still works, but CPU generation is
+slow. The model may misinterpret prompts and is not reliable for readable
+text or exact object counts.
 
 ### 📊 PPT mode
 
@@ -187,7 +191,7 @@ Set it up in four steps:
 
 Press `🔑 Login with Google`. A browser tab opens for consent, then the app
 shows `✔ your-email@gmail.com`. It requests only the OpenID Connect identity
-scopes (`openid`, `email`, and `profile`), not Gmail access. The token is
+scopes (`openid`, verified email, and basic profile), not Gmail access. The token is
 cached in `token.json` and refreshed when possible. Use **Logout** to remove
 the saved token.
 
@@ -259,7 +263,7 @@ After setup, turn off Wi-Fi and use the app:
 | Component | Licence | Link |
 |---|---|---|
 | Qwen2.5-Coder (7B / 3B / 1.5B) | Apache 2.0 | <https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct> |
-| SDXL-Turbo / SD-Turbo (Stability AI) | STABILITY AI NON-COMMERCIAL / research terms | <https://huggingface.co/stabilityai/sdxl-turbo> |
+| SD-Turbo | Stability AI Community License; review model card terms | <https://huggingface.co/stabilityai/sd-turbo> |
 | Ollama | MIT | <https://github.com/ollama/ollama> |
 | Streamlit | Apache 2.0 | <https://github.com/streamlit/streamlit> |
 | PyMuPDF | AGPL-3.0 (or commercial) | <https://pymupdf.readthedocs.io> |
@@ -279,7 +283,7 @@ input in many human languages too - the app never restricts your language.
 | "Could not reach Ollama" | run `ollama serve` in a terminal, keep it open |
 | "model not found" | `ollama pull qwen2.5-coder:7b` (use `3b` on a 4 GB card) |
 | The model is very slow | switch to `qwen2.5-coder:1.5b` in the sidebar |
-| "Out of GPU memory" in Image mode | lower the steps slider, close other apps, or use `stabilityai/sd-turbo` |
+| "Out of GPU memory" in Image mode | keep the image size at 512, close other GPU apps, and retry |
 | Images are very slow | no NVIDIA GPU detected - the app is running on CPU |
 | Google sign-in fails | Check `credentials.json` and Google OAuth consent-screen settings, or use demo mode |
 | "pymupdf is not installed" | `pip install -r requirements.txt` inside the venv |

@@ -29,28 +29,31 @@ We inject your text with `.replace("{{INPUT}}", text)` and **never**
 
 ---
 
-## 2. The image model - SDXL-Turbo / SD-Turbo
+## 2. The image model - SD-Turbo
 
-| | SDXL-Turbo | SD-Turbo |
-|---|---|---|
-| Diffusers id | `stabilityai/sdxl-turbo` | `stabilityai/sd-turbo` |
-| Use it when | VRAM **≥ 7 GB** (desktop RTX 3050) | VRAM **~4 GB** (laptop) or CPU |
-| Size | 512×512 fast, 768×768 nicer | 512×512 |
-| Steps | 1-4 (default 2) | 1-4 (default 2) |
-| Guidance scale | `0.0` (turbo models are trained for it) | `0.0` |
-| VRAM (fp16) | ≈ 7 GB | ≈ 2.5 GB |
-| Licence | STABILITY AI NON-COMMERCIAL licence - **free for learning, school and this competition project**; check the model card before commercial use | same |
-| Link | <https://huggingface.co/stabilityai/sdxl-turbo> | <https://huggingface.co/stabilityai/sd-turbo> |
+| | Value |
+|---|---|
+| Diffusers id | `stabilityai/sd-turbo` |
+| Steps | 1-4 (default 4) |
+| Guidance scale | `0.0` |
+| Image size | 512×512 recommended |
+| License | Review the Stability AI Community License and model card for usage terms. |
+| Model card | <https://huggingface.co/stabilityai/sd-turbo> |
 
-The app picks the model automatically:
+SD-Turbo is designed for very fast generation. It can produce imperfect
+details, misinterpret complex prompts, and does not reliably render legible
+text or exact object counts.
+
+The pipeline is loaded once and reused for subsequent images. Hugging Face
+caches model weights on disk. If the default user cache already contains
+SD-Turbo, the app loads it locally without downloading another copy.
+
+The app uses the local PyTorch device:
 
 ```python
-torch.cuda.is_available()  ->  GPU path, float16, fast
-otherwise                  ->  CPU path, float32, slow but it works
+torch.cuda.is_available()  ->  GPU path, float16
+otherwise                  ->  CPU path, float32 (slow)
 ```
-
-The pipeline is created **once** and kept in a global variable, so the weights
-are read from disk only on the first picture.
 
 ---
 
@@ -58,11 +61,11 @@ are read from disk only on the first picture.
 
 | VRAM | Code model | Image model | Notes |
 |---|---|---|---|
-| 8 GB (desktop) | `qwen2.5-coder:7b` | `stabilityai/sdxl-turbo` | best quality, ~15-30 tokens/s |
-| 4 GB (laptop) | `qwen2.5-coder:3b` | `stabilityai/sd-turbo` | `1.5b` if you want it faster |
-| No NVIDIA GPU | `qwen2.5-coder:1.5b` | `stabilityai/sd-turbo` on CPU | works, but slow |
+| 8 GB (desktop) | `qwen2.5-coder:7b` | `stabilityai/sd-turbo` | GPU generation |
+| 4 GB (laptop) | `qwen2.5-coder:3b` | `stabilityai/sd-turbo` | GPU generation |
+| No NVIDIA GPU | `qwen2.5-coder:1.5b` | `stabilityai/sd-turbo` on CPU | Works, but slow |
 
-The app reads `nvidia-smi` at startup and chooses the right one for you
+The app reads `nvidia-smi` at startup and chooses the code model for you
 (`src/code_model.py` → `detect_vram_mb()` and `suggest_model()`).
 
 **The 7B model on a 4 GB card:** it *does* still run - Ollama offloads part of
@@ -107,7 +110,7 @@ print(torch.cuda.get_device_properties(0).total_memory / 1024**3, "GB")
 | python-pptx | MIT | writing the .pptx file |
 | PyTorch | BSD-3-Clause | running the diffusion model |
 | diffusers / transformers / accelerate | Apache 2.0 | the diffusion pipeline |
-| google-api-python-client / google-auth-oauthlib | Apache 2.0 | the optional Gmail sign-in |
+| google-api-python-client / google-auth-oauthlib | Apache 2.0 | the optional Google sign-in |
 
 ---
 
@@ -117,6 +120,8 @@ print(torch.cuda.get_device_properties(0).total_memory / 1024**3, "GB")
   will tell you so.
 * PDF answering uses **keyword scoring** to pick the relevant part of the
   document. Embeddings + a proper RAG pipeline is the natural next step.
+* SD-Turbo is optimized for speed and can misinterpret prompts, struggle with
+  exact object counts, and cannot reliably render readable text.
 * The 7B model is a small model: it can be wrong. Always read the code it
   gives you before running it.
 * No code is ever executed by the app - the "debug" task only *explains* the

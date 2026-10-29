@@ -91,13 +91,13 @@ def main():
     # ------------------------------------------------------ what to use
     rule("4. Models that fit THIS machine")
     if vram_mb >= 7 * 1024:
-        code_model, image_model = "qwen2.5-coder:7b", "stabilityai/sdxl-turbo"
+        code_model = "qwen2.5-coder:7b"
     elif vram_mb >= 3.5 * 1024:
-        code_model, image_model = "qwen2.5-coder:3b", "stabilityai/sd-turbo"
+        code_model = "qwen2.5-coder:3b"
     else:
-        code_model, image_model = "qwen2.5-coder:1.5b", "stabilityai/sd-turbo"
+        code_model = "qwen2.5-coder:1.5b"
     print("  code model  :", code_model)
-    print("  image model :", image_model)
+    print("  image model : stabilityai/sd-turbo")
     print("  (the app picks these for you automatically)")
 
     # ---------------------------------------------------------- verdict

@@ -267,8 +267,9 @@ def render_sidebar():
             st.selectbox("Task", list(CODE_TASKS.keys()),
                          format_func=lambda key: CODE_TASKS[key], key="code_task")
         elif chosen == "image":
-            st.slider("Steps", min_value=1, max_value=4, value=2, key="img_steps")
+            st.slider("Steps", min_value=1, max_value=4, value=4, key="img_steps")
             st.selectbox("Size", [512, 640, 768], index=0, key="img_size")
+            st.caption("512px is recommended for this fast image model.")
             info, model_id = image_model.device_info()
             st.caption("Model: " + model_id)
             st.info(info)

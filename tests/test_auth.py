@@ -7,6 +7,16 @@ from src import auth
 
 
 class AuthTests(unittest.TestCase):
+    def test_google_sign_in_uses_canonical_openid_scopes(self):
+        self.assertEqual(
+            auth.SCOPES,
+            [
+                "openid",
+                "https://www.googleapis.com/auth/userinfo.profile",
+                "https://www.googleapis.com/auth/userinfo.email",
+            ],
+        )
+
     def test_demo_login_requires_name(self):
         self.assertEqual(
             auth.demo_login("  "), (None, "Please type a name (for example: student@example.com).")

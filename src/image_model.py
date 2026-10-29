@@ -5,8 +5,9 @@ The heavy libraries (torch, diffusers) are imported only when a picture is
 requested, so the app starts instantly. The pipeline is kept in a global so
 the weights are loaded from disk just ONCE per session.
 
-First run downloads the weights (~2 GB for sd-turbo, ~7 GB for sdxl-turbo).
-After that everything works with the Wi-Fi unplugged.
+The Stable Diffusion Turbo model is cached by Hugging Face after its first
+download. If it is already in the default user cache, reuse it without
+downloading another copy.
 """
 
 import time
@@ -16,6 +17,7 @@ from src import code_model
 
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 IMAGE_DIR = PROJECT_DIR / "outputs" / "images"
+MODEL_ID = "stabilityai/sd-turbo"
 
 # heavy stuff -> keep it in a global so we load it only once
 _PIPELINE = None
@@ -23,18 +25,10 @@ _PIPELINE_NAME = None
 
 
 def device_info():
-    """Return (description, model_id) for the machine we are running on."""
-    # We ask nvidia-smi (not torch) about the VRAM, because torch may not be
-    # installed yet - and the answer decides which image model we use.
+    """Return (device description, model id) for this machine."""
     vram_mb = code_model.detect_vram_mb()
     vram_gb = vram_mb / 1024
-
-    if vram_mb == 0:
-        model_id = "stabilityai/sd-turbo"       # no GPU -> the small model
-    elif vram_gb >= 7:
-        model_id = "stabilityai/sdxl-turbo"     # 8 GB card -> better quality
-    else:
-        model_id = "stabilityai/sd-turbo"       # 4 GB card -> smaller model
+    model_id = MODEL_ID
 
     try:
         import torch
@@ -59,29 +53,32 @@ def device_info():
 
 
 def _load_pipeline(model_id, device, dtype):
-    """Load the diffusion pipeline, trying a few options so it works everywhere."""
+    """Load SD-Turbo, preferring its existing default Hugging Face cache."""
     from diffusers import AutoPipelineForText2Image
 
-    attempts = [
-        {"torch_dtype": dtype, "safety_checker": None, "requires_safety_checker": False},
-        {"torch_dtype": dtype, "variant": "fp16"},
-        {"torch_dtype": dtype},
-    ]
-    last_error = None
-    for options in attempts:
-        try:
-            pipeline = AutoPipelineForText2Image.from_pretrained(model_id, **options)
-            return pipeline.to(device)
-        except Exception as error:          # try the next option
-            last_error = error
+    try:
+        default_cache = Path.home() / ".cache" / "huggingface" / "hub"
+        cached_repo = default_cache / "models--stabilityai--sd-turbo"
+        cache_options = {}
+        if cached_repo.is_dir():
+            cache_options = {
+                "cache_dir": str(default_cache),
+                "local_files_only": True,
+            }
 
-    raise RuntimeError(
-        "Could not load the image model '" + model_id + "': " + str(last_error) +
-        ". The weights are downloaded on first use - check your internet connection."
-    )
+        pipeline = AutoPipelineForText2Image.from_pretrained(
+            model_id, torch_dtype=dtype, **cache_options
+        )
+        return pipeline.to(device)
+    except Exception as error:
+        raise RuntimeError(
+            "Could not load image model '" + model_id + "': " + str(error) +
+            ". Check your internet connection and available disk space if the model "
+            "is not already cached."
+        ) from error
 
 
-def generate_image(prompt, steps=2, model_id=None, size=512):
+def generate_image(prompt, steps=4, model_id=None, size=512):
     """Draw one picture and save it as PNG.
 
     Returns (file_path, caption). Raises RuntimeError with a friendly message.
@@ -117,15 +114,15 @@ def generate_image(prompt, steps=2, model_id=None, size=512):
         result = _PIPELINE(
             prompt=prompt,
             num_inference_steps=int(steps),
-            guidance_scale=0.0,       # turbo models are trained for 0 guidance
+            guidance_scale=0.0,
             height=int(size),
             width=int(size),
         )
         image = result.images[0]
     except torch.cuda.OutOfMemoryError:
         raise RuntimeError(
-            "Out of GPU memory. Close other apps, lower the steps, or use the "
-            "smaller model (stabilityai/sd-turbo) instead of sdxl-turbo."
+            "Out of GPU memory. Close other apps, use 512px images, or try "
+            "a smaller generation workload."
         )
     except Exception as error:
         raise RuntimeError("Image generation failed: " + str(error))
@@ -141,6 +138,5 @@ def generate_image(prompt, steps=2, model_id=None, size=512):
                    "(model loaded in %.1f s)." % (draw_seconds, load_seconds))
     else:
         caption = ("Made on CPU with " + model_id + " in %.1f seconds. "
-                   "This is slow because there is no NVIDIA GPU - on a real "
-                   "RTX 3050 this takes a few seconds." % draw_seconds)
+                   "CPU generation can be slow." % draw_seconds)
     return file_path, caption

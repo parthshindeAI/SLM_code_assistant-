@@ -15,11 +15,11 @@ python-pptx>=0.6.23
 
 # --- images ---
 pillow>=10.0
+torchvision>=0.16
 # NOTE about torch: the plain PyPI wheel is the CPU-only build, so images
 # would be drawn on the CPU. On a machine with an NVIDIA GPU run
 #   .\install_cuda_torch.bat
-# once (it swaps in the +cuXXX build). Re-running this file afterwards can
-# put the CPU build back - just run install_cuda_torch.bat again.
+# once to install matching CUDA builds of torch and torchvision.
 torch>=2.1
 diffusers>=0.27
 transformers>=4.38
